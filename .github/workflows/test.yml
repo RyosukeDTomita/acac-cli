@@ -1,10 +1,28 @@
 name: test
 
+# Haskell のビルド/テストに関係するファイルが変わった時だけ走らせる。
+# (README・docs・npm 等のドキュメント変更では走らせない)
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "app/**"
+      - "test/**"
+      - "acac.cabal"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/test.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "src/**"
+      - "app/**"
+      - "test/**"
+      - "acac.cabal"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/test.yml"
 
 permissions: {}
 
