@@ -30,6 +30,9 @@
             (pkgs.haskell.packages.ghc9122.ghcWithPackages (ps: [
               ps.containers
               ps.bytestring
+              ps.vector
+              ps.aeson
+              ps.http-conduit
               ps.hspec
             ]))
             pkgs.haskell.packages.ghc9122.haskell-language-server

@@ -1,0 +1,18 @@
+-- acac プロジェクト用 GHCi 設定。`nix develop --command ghci` で起動すると読み込まれる。
+:set -isrc
+:set -XOverloadedStrings
+
+-- src/Acac.hs を読み込んでエクスポート関数をスコープに入れる。
+-- (未ロードの home モジュールは import だけでは入らないため :add を使う)
+:add Acac
+
+-- このプロジェクトで実際に使うモジュールだけを import する。
+import Data.Function (on)
+import Data.List (groupBy, intercalate, transpose)
+import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Time.Calendar (Day, dayOfWeek, diffDays, fromGregorian, showGregorian)
+import Data.Time.Clock (utctDay)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
