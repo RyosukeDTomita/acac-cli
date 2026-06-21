@@ -1,3 +1,4 @@
 node_modules/
 # リリース時にCIが配置するネイティブバイナリ(コミットしない)
 packages/*/bin/acac
+packages/*/bin/acac.exe
