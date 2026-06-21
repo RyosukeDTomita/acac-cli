@@ -23,10 +23,11 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       # 事前に seed した静的ビルドを Cachix から取得する(ソースからの再ビルドを避ける)。
-      # public キャッシュからの pull のみなので authToken は不要。
+      # CI は pull 専用(skipPush)なので、public キャッシュなら authToken は不要。
       - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
         with:
           name: acac
+          skipPush: true
       - name: Build static linux-x64 binary
         run: |
           nix build .#static
