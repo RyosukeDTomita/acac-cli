@@ -1,4 +1,4 @@
-# ACAC
+# ACAC-CLI
 
 [![test](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml)
 [![release](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml)
@@ -16,7 +16,7 @@ AC履歴の取得には [AtCoder Problems API](https://github.com/kenkoooo/AtCod
 
 ## HOW TO USE
 
-npm(`npx`)で実行できる。引数に AtCoder のユーザ名を1つ渡す。
+### linux-x64
 
 ```shell
 npx acac-cli <atcoder-username>
@@ -55,7 +55,13 @@ npx acac-cli <atcoder-username>
 └──────────────────┴────┴───────────────────────────────────────────────────┘
 ```
 
-直近の AC 履歴を週ごとのテーブルで表示する。現状の配布対象は linux-x64 のみ。
+直近の AC 履歴を週ごとのテーブルで表示する。
+
+### Others
+
+WIP
+
+[For Developer Memo](#for-developer-memo)を見てセットアップされたし。
 
 ---
 

@@ -9,11 +9,23 @@ on:
 permissions: {}
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+  # 各プラットフォームの静的バイナリをビルドして artifact にする。
+  # linux-x64 は seed 済みキャッシュから取得(数秒)。
+  # linux-arm64 は初回のみソースビルドになり得るため、cachix へ push して seed する
+  # (CACHIX_AUTH_TOKEN が必要)。以降はキャッシュヒットで高速。
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target: linux-x64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -22,29 +34,42 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
-      # 事前に seed した静的ビルドを Cachix から取得する(ソースからの再ビルドを避ける)。
-      # CI は pull 専用(skipPush)なので、public キャッシュなら authToken は不要。
       - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
         with:
           name: acac
-          skipPush: true
-      - name: Build static linux-x64 binary
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Build static binary
         run: |
           nix build .#static
-          install -m 0755 result/bin/acac acac-linux-x64
-      - name: Create release and upload binary
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
-        with:
-          files: acac-linux-x64
-          fail_on_unmatched_files: true
-      - name: Upload binary artifact for the npm job
+          install -m 0755 result/bin/acac "acac-${{ matrix.target }}"
+      - name: Upload binary artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: acac-linux-x64
-          path: acac-linux-x64
+          name: acac-${{ matrix.target }}
+          path: acac-${{ matrix.target }}
 
+  # 全プラットフォームのバイナリを GitHub Release に添付する。
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download all binaries
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create release and upload binaries
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          files: artifacts/acac-*
+          fail_on_unmatched_files: true
+
+  # プラットフォーム別 npm パッケージと本体パッケージを publish する。
   publish-npm:
-    needs: release
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -58,24 +83,29 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
-      - name: Download built binary
+      - name: Download all binaries
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: acac-linux-x64
-          path: artifact
-      - name: Place binary into the platform package
+          path: artifacts
+          merge-multiple: true
+      - name: Place binaries into platform packages
         run: |
-          mkdir -p npm/packages/linux-x64/bin
-          install -m 0755 artifact/acac-linux-x64 npm/packages/linux-x64/bin/acac
+          for target in linux-x64 linux-arm64; do
+            mkdir -p "npm/packages/$target/bin"
+            install -m 0755 "artifacts/acac-$target" "npm/packages/$target/bin/acac"
+          done
       - name: Set versions from the tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           npm --prefix npm pkg set version="$VERSION"
           npm --prefix npm pkg set optionalDependencies.acac-linux-x64="$VERSION"
+          npm --prefix npm pkg set optionalDependencies.acac-linux-arm64="$VERSION"
           npm --prefix npm/packages/linux-x64 pkg set version="$VERSION"
-      - name: Publish platform package
-        working-directory: npm/packages/linux-x64
-        run: npm publish --provenance --access public
+          npm --prefix npm/packages/linux-arm64 pkg set version="$VERSION"
+      - name: Publish platform packages
+        run: |
+          npm publish npm/packages/linux-x64 --provenance --access public
+          npm publish npm/packages/linux-arm64 --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish main package

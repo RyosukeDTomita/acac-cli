@@ -1,4 +1,4 @@
-# ACAC
+# ACAC-CLI
 
 [![test](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml)
 [![release](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml)
@@ -18,7 +18,7 @@ It uses the [AtCoder Problems API](https://github.com/kenkoooo/AtCoderProblems/b
 
 ## HOW TO USE
 
-You can run it via npm (`npx`). Pass a single AtCoder username as an argument.
+### linux-x64
 
 ```shell
 npx acac-cli <atcoder-username>
@@ -57,7 +57,13 @@ npx acac-cli <atcoder-username>
 └──────────────────┴────┴───────────────────────────────────────────────────┘
 ```
 
-It displays your recent AC history as a weekly table. Currently, the only distribution target is linux-x64.
+It displays your recent AC history as a weekly table.
+
+### Others
+
+WIP
+
+See [For Developer Memo](#for-developer-memo) to set it up.
 
 ---
 

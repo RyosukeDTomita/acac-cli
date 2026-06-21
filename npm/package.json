@@ -9,7 +9,8 @@
     "bin/"
   ],
   "optionalDependencies": {
-    "acac-linux-x64": "0.1.0"
+    "acac-linux-x64": "0.1.0",
+    "acac-linux-arm64": "0.1.0"
   },
   "engines": {
     "node": ">=18"
