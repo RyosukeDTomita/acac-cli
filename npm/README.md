@@ -3,11 +3,11 @@
 直近の AtCoder の AC 履歴を週ごとのテーブルで表示する CLI。
 
 ```sh
-npx @sigma1881/acac <atcoder-username>
+npx acac-cli <atcoder-username>
 ```
 
-> パッケージ名は `@sigma1881/acac`(スコープ付き)。素の `acac` は npm の名前類似ガードで
-> publish 不可だったためスコープ付きにしている。実行されるコマンド名は `acac`。
+> パッケージ名は `acac-cli`。素の `acac` は npm の名前類似ガードで publish 不可だったため
+> `acac-cli` にしている。インストールされるコマンド名は `acac`。
 
 ## 仕組み (optionalDependencies 方式)
 
