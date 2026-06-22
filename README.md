@@ -1,4 +1,4 @@
-# ACAC-CLI
+![acac-cli](https://github.com/RyosukeDTomita/acac-cli/blob/main/assets/header.png)
 
 [![test](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml)
 [![release](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml)
@@ -95,7 +95,7 @@ cabal run acac -- <atcoder-username>
 
 ```shell
 # runghc may be handier for debugging
- runghc -isrc -iapp app/Main.hs HathawayNoa
+runghc -isrc -iapp app/Main.hs <atcoder-username>
 ```
 
 You can also run it directly from the flake.
@@ -122,12 +122,11 @@ nix fmt
 
 Pushing a `v*.*.*` tag triggers artifact upload to a GitHub Release and npm publish.
 
-#### Configuring GitHub Secrets
+#### 1. Configuring GitHub Secrets
 
-- `NPM_TOKEN`: Read & Write, with Bypass 2FA
 - `CACHIX_AUTH_TOKEN`
 
-#### 1. Seed the static build to Cachix
+#### 2. Seed the static build to Cachix
 
 The CI fetches the distributable musl static binary from Cachix (`acac`) (because rebuilding from source takes around 60 minutes and times out).
 Therefore, before cutting a tag, you must seed the current static build to Cachix.
@@ -159,7 +158,7 @@ Conversely, changes to only README, docs, npm, or the devShell/comments in `flak
 (because the `callCabal2nix` source is narrowed to `src/app/test/acac.cabal` via `fileset`).
 When in doubt, if the narinfo check above returns 404, push — that is reliable.
 
-#### 2. Cut a tag and push
+#### 3. Cut a tag and push
 
 ```shell
 git tag v0.1.0

@@ -84,7 +84,15 @@ splitIntoWeeks xs = groupBy sameWeek xs
   where
     sameWeek :: (Day, [Text]) -> (Day, [Text]) -> Bool
     sameWeek a b = weekStart a == weekStart b
-    -- その日が属する週の始まり(直前の日曜)を返す
+    -- \| その日が属する週の始まり(直前の日曜)を返す
+    -- ghci> fromGregorian 2026 6 22
+    -- 2026-06-22
+    -- ghci> dayOfWeek $ fromGregorian 2026 6 22
+    -- Monday
+    -- ghci> negate $ toInteger $ dayOfWeekDiff Monday Sunday
+    -- -1
+    -- ghci> addDays (negate $ toInteger $ dayOfWeekDiff Monday Sunday) $ fromGregorian 2026 6 22
+    -- 2026-06-21
     weekStart :: (Day, [Text]) -> Day
     weekStart (day, _) = addDays (negate $ toInteger $ dayOfWeekDiff (dayOfWeek day) Sunday) day
 

@@ -1,4 +1,4 @@
-# ACAC-CLI
+![acac-cli](https://github.com/RyosukeDTomita/acac-cli/blob/main/assets/header.png)
 
 [![test](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/test.yml)
 [![release](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml/badge.svg)](https://github.com/RyosukeDTomita/acac-cli/actions/workflows/release.yml)
@@ -120,11 +120,11 @@ nix fmt
 
 `v*.*.*` タグを push すると、GitHub Release への成果物アップロードと npm publish が走る。
 
-#### GitHub Secretsの設定
+#### 1. GitHub Secretsの設定
 
 - `CACHIX_AUTH_TOKEN`
 
-#### 1. Cachix に静的ビルドを seed する
+#### 2. Cachix に静的ビルドを seed する
 
 CI は配布用の musl 静的バイナリをCachix(`acac`)から取得する(ソースからの再ビルドは60分級でタイムアウトするため)。
 そのため、タグを切る前に、現在の静的ビルドをCachixへseedしておく必要がある。
@@ -156,7 +156,7 @@ curl -s -o /dev/null -w "%{http_code}\n" "https://acac.cachix.org/$hash.narinfo"
 (`callCabal2nix` のソースを `fileset` で `src/app/test/acac.cabal` に絞っているため)。
 判断に迷ったら、上の narinfo 確認で 404 なら push、で確実。
 
-#### 2. タグを切って push する
+#### 3. タグを切って push する
 
 ```shell
 git tag v0.1.0

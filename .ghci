@@ -15,7 +15,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time.Calendar (Day, DayOfWeek (Sunday), addDays, dayOfWeek, dayOfWeekDiff, fromGregorian, showGregorian)
+import Data.Time.Calendar (Day, DayOfWeek (..), addDays, dayOfWeek, dayOfWeekDiff, fromGregorian, showGregorian)
 import Data.Time.Clock (utctDay)
 import Data.Time.Clock.POSIX (getPOSIXTime, posixSecondsToUTCTime)
 import Network.HTTP.Simple (getResponseBody, getResponseStatusCode, httpLBS, parseRequest, setRequestHeader)
