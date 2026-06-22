@@ -130,6 +130,9 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
+      # OIDC trusted publishing には npm >= 11.5.1 が必要(node20 同梱は npm10 のため更新する)。
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
       - name: Download all binaries
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -151,15 +154,13 @@ jobs:
             npm --prefix npm pkg set "optionalDependencies.acac-$target=$VERSION"
             npm --prefix "npm/packages/$target" pkg set version="$VERSION"
           done
+      # 認証は OIDC trusted publishing(npmjs.com 側で各パッケージに設定済み)。
+      # NODE_AUTH_TOKEN は不要。provenance は trusted publishing で自動付与される。
       - name: Publish platform packages
         run: |
           for target in linux-x64 linux-arm64 darwin-arm64 darwin-x64 win32-x64; do
             npm publish "npm/packages/$target" --provenance --access public
           done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish main package
         working-directory: npm
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
