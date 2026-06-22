@@ -2,6 +2,19 @@
   "name": "acac-cli",
   "version": "0.0.0",
   "description": "Show recent AtCoder AC history as a weekly ccusage-style table",
+  "keywords": [
+    "atcoder",
+    "competitive-programming",
+    "cli",
+    "ac",
+    "haskell",
+    "acac-cli"
+  ],
+  "author": "RyosukeDTomita",
+  "homepage": "https://github.com/RyosukeDTomita/acac-cli#readme",
+  "bugs": {
+    "url": "https://github.com/RyosukeDTomita/acac-cli/issues"
+  },
   "bin": {
     "acac": "bin/cli.js"
   },

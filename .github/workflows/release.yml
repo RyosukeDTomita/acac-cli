@@ -146,6 +146,13 @@ jobs:
           done
           mkdir -p npm/packages/win32-x64/bin
           install -m 0755 "artifacts/acac-win32-x64.exe" "npm/packages/win32-x64/bin/acac.exe"
+      # license フィールドを宣言しているので tarball にも LICENSE 本体を同梱する。
+      - name: Copy LICENSE into npm packages
+        run: |
+          cp LICENSE npm/LICENSE
+          for target in linux-x64 linux-arm64 darwin-arm64 darwin-x64 win32-x64; do
+            cp LICENSE "npm/packages/$target/LICENSE"
+          done
       - name: Set versions from the tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
