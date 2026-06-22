@@ -1,0 +1,21 @@
+{
+  "languages": {
+    "Haskell": {
+      "tab_size": 2,
+      "hard_tabs": false
+    }
+  },
+  "lsp": {
+    "hls": {
+      "binary": {
+        "path": "/nix/store/hplwswp55zap6w9irxrfq8943983iwdd-haskell-language-server-2.10.0.0/bin/haskell-language-server-wrapper",
+        "arguments": ["--lsp"]
+      },
+      "initialization_options": {
+        "haskell": {
+          "checkProject": false
+        }
+      }
+    }
+  }
+}

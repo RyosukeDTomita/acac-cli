@@ -4,13 +4,12 @@
 module Acac
   ( Submission (..),
     parseArgs,
-    formatProblemId,
     toJstDay,
+    pageSize,
+    nextFromSecond,
     aggregate,
     splitIntoWeeks,
     renderTable,
-    pageSize,
-    nextFromSecond,
   )
 where
 
@@ -25,30 +24,7 @@ import Data.Time.Calendar (Day, dayOfWeek, diffDays, showGregorian)
 import Data.Time.Clock (utctDay)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 
--- | コマンドライン引数からユーザ名を取り出す。
--- 引数はユーザ名1個だけを受け付け、それ以外は usage エラーを返す。
-parseArgs :: [String] -> Either String Text
-parseArgs [username] = Right (T.pack username)
-parseArgs _args = Left "usage: acac <atcoder-username>"
-
--- | 提出の contest_id と problem_id から表示用ラベルを作る。
--- 例: formatProblemId "abc457" "abc457_c" == "abc457C"
--- problem_id の最後の `_` 以降をサフィックスとみなし、大文字化して contest_id に連結する。
-formatProblemId :: Text -> Text -> Text
-formatProblemId contestId problemId = contestId <> T.toUpper suffix
-  where
-    suffix = T.takeWhileEnd (/= '_') problemId
-
--- | epoch秒(UTC基準)を JST(UTC+9) の日付に変換する。
--- AtCoder は JST 基準なので、日付の区切りも JST で行う。
--- ghci> posixSecondsToUTCTime $ fromIntegral 0
--- 1970-0ghci> utctDay $ posixSecondsToUTCTime $ fromIntegral 0
--- ghci> utctDay $ posixSecondsToUTCTime $ fromIntegral 01-01 00:00:00 UTC
--- 1970-01-01
-toJstDay :: Int -> Day
-toJstDay epochSecond = utctDay $ posixSecondsToUTCTime $ fromIntegral $ epochSecond + 9 * 3600
-
--- | AtCoder Problems API の提出1件。集計に必要なフィールドだけ持つ。
+-- | AtCoder Problems API の提出1件から表を作るために必要なフィールドを抽出したもの
 data Submission = Submission
   { epochSecond :: Int,
     problemId :: Text,
@@ -68,7 +44,22 @@ instance FromJSON Submission where
         <*> o .: "contest_id"
         <*> o .: "result"
 
--- | API が 1 リクエストで返す提出の最大件数。
+-- | コマンドライン引数からユーザ名を取り出す。
+-- 引数はユーザ名1個だけを受け付け、それ以外は usage エラーを返す。
+parseArgs :: [String] -> Either String Text
+parseArgs [username] = Right (T.pack username)
+parseArgs _args = Left "usage: acac <atcoder-username>"
+
+-- | epoch秒(UTC基準)を JST(UTC+9) の日付に変換する。
+-- AtCoder は JST 基準なので、日付の区切りも JST で行う。
+-- ghci> posixSecondsToUTCTime $ fromIntegral 0
+-- 1970-01-01 00:00:00 UTC
+-- ghci> utctDay $ posixSecondsToUTCTime $ fromIntegral 0
+-- 1970-01-01
+toJstDay :: Int -> Day
+toJstDay epochSecond = utctDay $ posixSecondsToUTCTime $ fromIntegral $ epochSecond + 9 * 3600
+
+-- | APIが1リクエストで返す提出の最大件数(固定値)
 pageSize :: Int
 pageSize = 500
 
@@ -78,7 +69,7 @@ pageSize = 500
 nextFromSecond :: [Submission] -> Maybe Int
 nextFromSecond batch
   | length batch < pageSize = Nothing
-  | otherwise = Just (maximum (map epochSecond batch) + 1)
+  | otherwise = Just $ maximum (map epochSecond batch) + 1
 
 -- | 提出列を JST の日ごとに集計する。
 -- AC(result == "AC")だけを対象に、同じ問題の重複を除いた問題ラベル一覧を作る。
@@ -91,7 +82,7 @@ aggregate submissions =
     grouped =
       Map.fromListWith
         Set.union
-        [ (toJstDay (epochSecond s), Set.singleton (formatProblemId (contestId s) (problemId s)))
+        [ (toJstDay (epochSecond s), Set.singleton $ formatProblemId (contestId s) (problemId s))
         | s <- acs
         ]
 
@@ -102,9 +93,6 @@ splitIntoWeeks today = groupBy ((==) `on` weeksAgo)
   where
     weeksAgo (day, _) = diffDays today day `div` 7
 
--- | 日付を曜日付きの文字列にする。例: showDayWithWeekday ... == "2026-06-20 (Sat)"
-showDayWithWeekday :: Day -> String
-showDayWithWeekday day = showGregorian day ++ " (" ++ take 3 (show (dayOfWeek day)) ++ ")"
 
 -- | 週ごとに集計した結果を、全体で1つの box-drawing テーブル文字列にする。
 -- ヘッダは先頭に1つだけ。各週は区切り線で分け、週末に AC 数合計の Total 行を置く。
@@ -125,3 +113,15 @@ renderTable weeks = intercalate "\n" ([top, header] ++ concatMap weekSection wee
     bottom = border "└" "┴" "┘"
     header = renderRow headerCells
     weekSection week = sep : map (renderRow . rowCells) week ++ [sep, renderRow (totalCells week)]
+
+-- | 提出の contest_id と problem_id から表示用ラベルを作る。
+-- 例: formatProblemId "abc457" "abc457_c" == "abc457C"
+-- problem_id の最後の `_` 以降をサフィックスとみなし、大文字化して contest_id に連結する。
+formatProblemId :: Text -> Text -> Text
+formatProblemId contestId problemId = contestId <> T.toUpper suffix
+  where
+    suffix = T.takeWhileEnd (/= '_') problemId
+
+-- | 日付を曜日付きの文字列にする。例: showDayWithWeekday ... == "2026-06-20 (Sat)"
+showDayWithWeekday :: Day -> String
+showDayWithWeekday day = showGregorian day ++ " (" ++ take 3 (show $ dayOfWeek day) ++ ")"

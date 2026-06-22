@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wunused-imports #-}
 
-import Acac (Submission (..), aggregate, formatProblemId, nextFromSecond, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
+import Acac (Submission (..), aggregate, nextFromSecond, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
 import Data.Aeson (eitherDecode)
 import Data.List (intercalate)
 import Data.Text (Text)
@@ -20,14 +20,6 @@ mkSub sec problem contest res =
 
 main :: IO ()
 main = hspec $ do
-  describe "parseArgs" $ do
-    it "returns the username for a single argument" $
-      parseArgs ["HathawayNoa"] `shouldBe` Right "HathawayNoa"
-    it "fails with a usage message when no argument is given" $
-      parseArgs [] `shouldBe` Left "usage: acac <atcoder-username>"
-    it "fails with a usage message when too many arguments are given" $
-      parseArgs ["a", "b"] `shouldBe` Left "usage: acac <atcoder-username>"
-
   describe "FromJSON Submission" $ do
     it "parses required fields and ignores extra ones" $
       eitherDecode
@@ -40,9 +32,13 @@ main = hspec $ do
               result = "AC"
             }
 
-  describe "formatProblemId" $ do
-    it "converts abc457 and abc457_c to abc457C" $
-      formatProblemId "abc457" "abc457_c" `shouldBe` "abc457C"
+  describe "parseArgs" $ do
+    it "returns the username for a single argument" $
+      parseArgs ["HathawayNoa"] `shouldBe` Right "HathawayNoa"
+    it "fails with a usage message when no argument is given" $
+      parseArgs [] `shouldBe` Left "usage: acac <atcoder-username>"
+    it "fails with a usage message when too many arguments are given" $
+      parseArgs ["a", "b"] `shouldBe` Left "usage: acac <atcoder-username>"
 
   describe "toJstDay" $ do
     it "treats a UTC 2026-06-16 23:00 epoch as 2026-06-17 in JST" $

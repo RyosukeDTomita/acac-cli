@@ -42,8 +42,8 @@ main = do
       now <- round <$> getPOSIXTime
       submissions <- fetchRecent username now
       let today = toJstDay now
-          weeks = splitIntoWeeks today (aggregate submissions)
-      putStrLn (renderTable weeks)
+          weeks = splitIntoWeeks today $ aggregate submissions
+      putStrLn $ renderTable weeks
 
 -- | 直近の提出を取得する。
 -- まず4週間ぶんを1リクエストで試し、満杯(=1アクセスに収まらない)なら
