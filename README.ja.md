@@ -18,7 +18,6 @@ AC履歴の取得には [AtCoder Problems API](https://github.com/kenkoooo/AtCod
 
 ## HOW TO USE
 
-
 ```shell
 npx acac-cli <atcoder-username>
 ┌──────────────────┬────┬───────────────────────────────────────────────────┐
@@ -70,9 +69,9 @@ npx acac-cli <atcoder-username>
 | macOS   | darwin-x64  |              |
 | Windows | win32-x64   | ✅           |
 
-✅ 以外の環境で実機検証できた方は、ぜひ [Issue](https://github.com/RyosukeDTomita/acac/issues) で連絡してほしい。
+✅ 以外の環境で実機検証できた方は、ぜひ [Issue](https://github.com/RyosukeDTomita/acac/issues) で連絡してください。
 
-[For Developer Memo](#for-developer-memo)を見てセットアップされたし。
+その他の環境をお使いの方はIssueに要望/PRをいただけると幸いですが、[For Developer Memo](#for-developer-memo)を見てセットアップすることも可能です。
 
 ---
 

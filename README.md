@@ -20,18 +20,6 @@ It uses the [AtCoder Problems API](https://github.com/kenkoooo/AtCoderProblems/b
 
 ## HOW TO USE
 
-The following binaries are built.
-
-| OS      | binary type  | Verified on real device |
-| ------- | ------------ | ----------------------- |
-| Linux   | linux-x64    | ✅                      |
-| Linux   | linux-arm64  |                         |
-| macOS   | darwin-arm64 | ✅                      |
-| macOS   | darwin-x64   |                         |
-| Windows | win32-x64    | ✅                      |
-
-If you have verified acac on a real device other than the ✅ ones, please let us know via an [Issue](https://github.com/RyosukeDTomita/acac/issues).
-
 ```shell
 npx acac-cli <atcoder-username>
 ┌──────────────────┬────┬───────────────────────────────────────────────────┐
@@ -71,11 +59,21 @@ npx acac-cli <atcoder-username>
 
 It displays your recent AC history as a weekly table.
 
-### Others
+### supported
 
-WIP
+The following binaries are built.
 
-See [For Developer Memo](#for-developer-memo) to set it up.
+| OS      | binary type  | Verified on real device |
+| ------- | ------------ | ----------------------- |
+| Linux   | linux-x64    | ✅                      |
+| Linux   | linux-arm64  |                         |
+| macOS   | darwin-arm64 | ✅                      |
+| macOS   | darwin-x64   |                         |
+| Windows | win32-x64    | ✅                      |
+
+If you have verified acac on a real device other than the ✅ ones, please let us know via an [Issue](https://github.com/RyosukeDTomita/acac/issues).
+
+If you use another environment, we would appreciate a request/PR on an Issue, but you can also set it up by referring to [For Developer Memo](#for-developer-memo).
 
 ---
 
