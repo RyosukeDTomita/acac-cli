@@ -2,18 +2,19 @@ name: release
 
 # v*.*.* タグの push でビルドし、GitHub Release への成果物アップロードと npm publish を行う。
 # 前提: リポジトリ設定で Immutable Releases を有効化し、タグは署名して push する。
+# workflow_dispatch でも起動でき、その場合はビルドのみ(publish はタグ push のときだけ)。
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  # 各プラットフォームの静的バイナリをビルドして artifact にする。
-  # linux-x64 は seed 済みキャッシュから取得(数秒)。
-  # linux-arm64 は初回のみソースビルドになり得るため、cachix へ push して seed する
+  # Linux は nix の musl 静的バイナリ。linux-x64 は seed 済みキャッシュから取得(数秒)。
+  # linux-arm64 は初回のみソースビルドになり得るため cachix へ push して seed する
   # (CACHIX_AUTH_TOKEN が必要)。以降はキャッシュヒットで高速。
-  build:
+  build-linux:
     strategy:
       fail-fast: false
       matrix:
@@ -48,9 +49,52 @@ jobs:
           name: acac-${{ matrix.target }}
           path: acac-${{ matrix.target }}
 
-  # 全プラットフォームのバイナリを GitHub Release に添付する。
+  # macOS / Windows は実機 runner 上で ghcup(haskell-actions/setup)+ cabal でビルドする。
+  # フル static にはせず、各 OS 標準のシステムライブラリにリンクする(その OS では可搬)。
+  build-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            target: darwin-arm64
+            ext: ""
+          - runner: macos-13
+            target: darwin-x64
+            ext: ""
+          - runner: windows-latest
+            target: win32-x64
+            ext: ".exe"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: haskell-actions/setup@cd0d9bdd65b20557f41bea4dbe43d0b5fbbfe553 # v2.11.0
+        with:
+          ghc-version: "9.12.2"
+          cabal-version: "latest"
+      - name: Build with cabal
+        shell: bash
+        run: |
+          cabal update
+          cabal build exe:acac
+          install -m 0755 "$(cabal list-bin exe:acac)" "acac-${{ matrix.target }}${{ matrix.ext }}"
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: acac-${{ matrix.target }}
+          path: acac-${{ matrix.target }}${{ matrix.ext }}
+
+  # 全プラットフォームのバイナリを GitHub Release に添付する(タグ push のときのみ)。
   github-release:
-    needs: build
+    needs:
+      - build-linux
+      - build-native
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -67,9 +111,12 @@ jobs:
           files: artifacts/acac-*
           fail_on_unmatched_files: true
 
-  # プラットフォーム別 npm パッケージと本体パッケージを publish する。
+  # プラットフォーム別 npm パッケージと本体パッケージを publish する(タグ push のときのみ)。
   publish-npm:
-    needs: build
+    needs:
+      - build-linux
+      - build-native
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -90,22 +137,25 @@ jobs:
           merge-multiple: true
       - name: Place binaries into platform packages
         run: |
-          for target in linux-x64 linux-arm64; do
+          for target in linux-x64 linux-arm64 darwin-arm64 darwin-x64; do
             mkdir -p "npm/packages/$target/bin"
             install -m 0755 "artifacts/acac-$target" "npm/packages/$target/bin/acac"
           done
+          mkdir -p npm/packages/win32-x64/bin
+          install -m 0755 "artifacts/acac-win32-x64.exe" "npm/packages/win32-x64/bin/acac.exe"
       - name: Set versions from the tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           npm --prefix npm pkg set version="$VERSION"
-          npm --prefix npm pkg set optionalDependencies.acac-linux-x64="$VERSION"
-          npm --prefix npm pkg set optionalDependencies.acac-linux-arm64="$VERSION"
-          npm --prefix npm/packages/linux-x64 pkg set version="$VERSION"
-          npm --prefix npm/packages/linux-arm64 pkg set version="$VERSION"
+          for target in linux-x64 linux-arm64 darwin-arm64 darwin-x64 win32-x64; do
+            npm --prefix npm pkg set "optionalDependencies.acac-$target=$VERSION"
+            npm --prefix "npm/packages/$target" pkg set version="$VERSION"
+          done
       - name: Publish platform packages
         run: |
-          npm publish npm/packages/linux-x64 --provenance --access public
-          npm publish npm/packages/linux-arm64 --provenance --access public
+          for target in linux-x64 linux-arm64 darwin-arm64 darwin-x64 win32-x64; do
+            npm publish "npm/packages/$target" --provenance --access public
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish main package

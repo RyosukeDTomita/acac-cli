@@ -1,15 +1,15 @@
 {
-  "name": "acac-linux-arm64",
+  "name": "acac-win32-x64",
   "version": "0.0.0",
-  "description": "Prebuilt acac binary for linux-arm64",
+  "description": "Prebuilt acac binary for win32-x64",
   "files": [
     "bin/"
   ],
   "os": [
-    "linux"
+    "win32"
   ],
   "cpu": [
-    "arm64"
+    "x64"
   ],
   "license": "MIT",
   "repository": {

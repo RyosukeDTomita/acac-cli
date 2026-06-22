@@ -7,8 +7,9 @@ const { spawnSync } = require("child_process");
 
 function resolveBinary() {
   const platformPackage = `acac-${process.platform}-${process.arch}`;
+  const exe = process.platform === "win32" ? "acac.exe" : "acac";
   try {
-    return require.resolve(`${platformPackage}/bin/acac`);
+    return require.resolve(`${platformPackage}/bin/${exe}`);
   } catch {
     return null;
   }

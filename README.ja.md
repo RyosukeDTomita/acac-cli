@@ -16,7 +16,16 @@ AC履歴の取得には [AtCoder Problems API](https://github.com/kenkoooo/AtCod
 
 ## HOW TO USE
 
-### linux-x64
+以下のバイナリを作成。
+
+- Linux
+  - linux-x64
+  - linux-arm64
+- macOS
+  - darwin-arm64
+  - darwin-x64
+- Windoes
+  - win32-x64
 
 ```shell
 npx acac-cli <atcoder-username>
@@ -108,13 +117,17 @@ nix fmt
 
 ### Release
 
-`v*.*.*` タグを push すると、GitHub Release への成果物アップロードと npm publish が走る(`.github/workflows/release.yml`)。
+`v*.*.*` タグを push すると、GitHub Release への成果物アップロードと npm publish が走る。
 
-CI は配布用の musl 静的バイナリを **Cachix(`acac`)から取得**する(ソースからの再ビルドは
-60分級でタイムアウトするため)。なので **タグを切る前に、現在の静的ビルドを Cachix へ
-seed しておく**必要がある。
+#### GitHub Secretsの設定
+
+- `NPM_TOKEN`: Read & Writeかつ、Bypass 2FA
+- `CACHIX_AUTH_TOKEN`
 
 #### 1. Cachix に静的ビルドを seed する
+
+CI は配布用の musl 静的バイナリをCachix(`acac`)から取得する(ソースからの再ビルドは60分級でタイムアウトするため)。
+そのため、タグを切る前に、現在の静的ビルドをCachixへseedしておく必要がある。
 
 ```shell
 # 初回のみ token を設定(以降は不要)
@@ -124,7 +137,7 @@ nix build .#static
 cachix push acac ./result
 ```
 
-確認(200 なら CI がヒットする。404 なら未 seed なので push する):
+以下を実行し、200ならOK。404なら未seedなのでpushする
 
 ```shell
 hash=$(basename "$(readlink -f result)" | cut -d- -f1)
