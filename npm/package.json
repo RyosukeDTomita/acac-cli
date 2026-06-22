@@ -1,6 +1,6 @@
 {
   "name": "acac-cli",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Show recent AtCoder AC history as a weekly ccusage-style table",
   "bin": {
     "acac": "bin/cli.js"
@@ -9,11 +9,11 @@
     "bin/"
   ],
   "optionalDependencies": {
-    "acac-linux-x64": "0.1.0",
-    "acac-linux-arm64": "0.1.0",
-    "acac-darwin-arm64": "0.1.0",
-    "acac-darwin-x64": "0.1.0",
-    "acac-win32-x64": "0.1.0"
+    "acac-linux-x64": "0.0.0",
+    "acac-linux-arm64": "0.0.0",
+    "acac-darwin-arm64": "0.0.0",
+    "acac-darwin-x64": "0.0.0",
+    "acac-win32-x64": "0.0.0"
   },
   "engines": {
     "node": ">=18"

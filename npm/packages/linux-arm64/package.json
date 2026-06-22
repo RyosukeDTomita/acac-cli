@@ -1,6 +1,6 @@
 {
   "name": "acac-linux-arm64",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Prebuilt acac binary for linux-arm64",
   "files": [
     "bin/"
