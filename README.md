@@ -79,6 +79,17 @@ If you have verified acac on a real device other than the ✅ ones, please let u
 
 If you use another environment, we would appreciate a request/PR on an Issue, but you can also set it up by referring to [For Developer Memo](#for-developer-memo).
 
+### Supply chain / build transparency
+
+For supply chain transparency, the distributed artifacts are produced as follows.
+
+- All binaries are built on GitHub Actions from the [acac-cli](https://github.com/RyosukeDTomita/acac-cli) source. Nothing is published from a local machine.
+  - Linux (linux-x64 / linux-arm64) is a reproducible musl static build via Nix (`nix build .#static`).
+  - macOS / Windows are built on each OS's native runner with GHC 9.12.2 + cabal.
+- Publishing to npm is done by CI **with provenance** (`--provenance`, OIDC trusted publishing). Each release can be verified back to the workflow run and commit it came from.
+- Releases are cut from `v*.*.*` tags using GitHub **Immutable Releases** (the release is created by the CI bot, not by hand).
+- Platform binaries are distributed as `acac-<os>-<arch>` `optionalDependency` packages, so the main package has no runtime dependencies.
+
 ---
 
 ## For Developer Memo

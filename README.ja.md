@@ -77,6 +77,17 @@ npx acac-cli <atcoder-username>
 
 その他の環境をお使いの方はIssueに要望/PRをいただけると幸いですが、[For Developer Memo](#for-developer-memo)を見てセットアップすることも可能です。
 
+### Supply chain / build transparency
+
+サプライチェーンの透明性のために、配布物は次のように作っている。
+
+- すべてのバイナリは [acac-cli](https://github.com/RyosukeDTomita/acac-cli) のソースから GitHub Actions 上でビルドする。手元のマシンからは publish しない。
+  - Linux(linux-x64 / linux-arm64)は Nix による再現可能な musl 静的ビルド(`nix build .#static`)。
+  - macOS / Windows は各 OS のネイティブ runner 上で GHC 9.12.2 + cabal でビルドする。
+- npm への publish は CI が **provenance 付き**(`--provenance`・OIDC trusted publishing)で行う。各リリースは実行された workflow と commit に紐づけて検証できる。
+- リリースは `v*.*.*` タグから GitHub の **Immutable Releases** で作成する(リリースは CI bot が作成し、手動では作らない)。
+- プラットフォーム別バイナリは `acac-<os>-<arch>` という `optionalDependency` として配布し、本体パッケージのランタイム依存は持たない。
+
 ---
 
 ## For Developer Memo
