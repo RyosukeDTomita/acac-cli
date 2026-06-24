@@ -8,11 +8,6 @@ on:
     # 毎日 00:00 UTC に更新(npm の download API は前日ぶんまでの集計)。
     - cron: "0 0 * * *"
   workflow_dispatch:
-  # TODO(検証用・確認後に削除): push でバッジ表示が変わるか確認するための一時トリガ。
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/downloads-badge.yml"
 
 permissions: {}
 
