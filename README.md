@@ -89,6 +89,7 @@ For supply chain transparency, the distributed artifacts are produced as follows
   - macOS / Windows are built on each OS's native runner with GHC 9.12.2 + cabal.
 - Publishing to npm is done by CI **with provenance** (`--provenance`, OIDC trusted publishing). Each release can be verified back to the workflow run and commit it came from.
 - Releases are cut from `v*.*.*` tags using GitHub **Immutable Releases** (the release is created by the CI bot, not by hand).
+- Each GitHub Release binary is **signed with cosign (keyless)** — every `acac-<os>-<arch>` ships an accompanying `.sig` (signature) and `.pem` (certificate), plus a `acac.intoto.jsonl` SLSA **provenance** attestation for the release. This is what OpenSSF Scorecard's `Signed-Releases` checks (Immutable Releases and npm provenance alone do not satisfy it).
 - Platform binaries are distributed as `acac-<os>-<arch>` `optionalDependency` packages, so the main package has no runtime dependencies.
 
 ---

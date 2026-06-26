@@ -90,6 +90,9 @@ jobs:
           path: acac-${{ matrix.target }}${{ matrix.ext }}
 
   # 全プラットフォームのバイナリを GitHub Release に添付する(タグ push のときのみ)。
+  # 各バイナリを cosign keyless で署名(.sig/.pem)し、さらに SLSA provenance
+  # (.intoto.jsonl)を生成して同梱する。これにより OpenSSF Scorecard の
+  # Signed-Releases を満たす(Immutable Releases や npm provenance では満たせない)。
   github-release:
     needs:
       - build-linux
@@ -99,16 +102,42 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      # cosign keyless 署名 / provenance 用の OIDC トークン取得に必要。
+      id-token: write
+      # attest-build-provenance が GitHub の attestation ストアへ登録するのに必要。
+      attestations: write
     steps:
       - name: Download all binaries
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: artifacts
           merge-multiple: true
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      # 各バイナリを keyless 署名。Scorecard が認識する .sig と、検証用の .pem を出力する。
+      - name: Sign binaries with cosign
+        run: |
+          for f in artifacts/acac-*; do
+            cosign sign-blob --yes \
+              --output-signature "$f.sig" \
+              --output-certificate "$f.pem" \
+              "$f"
+          done
+      # 全バイナリをまとめた SLSA provenance を生成し、Release アセット用に
+      # .intoto.jsonl として書き出す(Scorecard の provenance スコア分)。
+      - name: Generate provenance attestation
+        id: provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: "artifacts/acac-linux-x64,artifacts/acac-linux-arm64,artifacts/acac-darwin-arm64,artifacts/acac-darwin-x64,artifacts/acac-win32-x64.exe"
+      - name: Stage provenance as release asset
+        run: cp "${{ steps.provenance.outputs.bundle-path }}" artifacts/acac.intoto.jsonl
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          files: artifacts/acac-*
+          files: |
+            artifacts/acac-*
+            artifacts/acac.intoto.jsonl
           fail_on_unmatched_files: true
 
   # プラットフォーム別 npm パッケージと本体パッケージを publish する(タグ push のときのみ)。

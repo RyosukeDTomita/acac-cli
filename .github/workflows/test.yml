@@ -1,7 +1,10 @@
 name: test
 
-# Haskell のビルド/テストに関係するファイルが変わった時だけ走らせる。
+# push(main)では Haskell のビルド/テストに関係するファイルが変わった時だけ走らせる。
 # (README・docs・npm 等のドキュメント変更では走らせない)
+# pull_request では paths で絞らず必ず走らせる。これは OpenSSF Scorecard の
+# CI-Tests が「マージ済み PR に CI テストの実行があるか」を見るため。paths で
+# スキップすると PR にチェックが付かず CI-Tests が 0 になる。
 on:
   push:
     branches: [main]
@@ -15,14 +18,6 @@ on:
       - ".github/workflows/test.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "src/**"
-      - "app/**"
-      - "test/**"
-      - "acac.cabal"
-      - "flake.nix"
-      - "flake.lock"
-      - ".github/workflows/test.yml"
 
 permissions: {}
 
