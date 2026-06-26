@@ -1,0 +1,3 @@
+# CI 関連ファイルのオーナー
+/.github/workflows/ @RyosukeDTomita
+/.github/CODEOWNERS  @RyosukeDTomita
