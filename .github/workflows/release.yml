@@ -90,7 +90,7 @@ jobs:
           path: acac-${{ matrix.target }}${{ matrix.ext }}
 
   # 全プラットフォームのバイナリを GitHub Release に添付する(タグ push のときのみ)。
-  # 各バイナリを cosign keyless で署名(.sig/.pem)し、さらに SLSA provenance
+  # 各バイナリを cosign keyless で署名(*.sigstore.json バンドル)し、さらに SLSA provenance
   # (.intoto.jsonl)を生成して同梱する。これにより OpenSSF Scorecard の
   # Signed-Releases を満たす(Immutable Releases や npm provenance では満たせない)。
   github-release:
@@ -114,17 +114,16 @@ jobs:
           merge-multiple: true
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-      # 各バイナリを keyless 署名。Scorecard が認識する .sig と、検証用の .pem を出力する。
-      # cosign v3 以降は --new-bundle-format が既定で有効になり、--output-signature /
-      # --output-certificate が無視され、--bundle 未指定だと空パスへの書き込みで失敗する。
-      # ここでは .sig/.pem を使う前提なので --new-bundle-format=false で旧形式の出力に固定する。
+      # 各バイナリを keyless 署名。cosign v3 以降は signing-config(TUF 由来)が
+      # 新バンドル形式を要求するため、旧来の .sig/.pem 出力(--output-signature /
+      # --output-certificate)や --new-bundle-format=false は使えない。署名・証明書を
+      # まとめた Sigstore バンドルを *.sigstore.json として出力する。Scorecard の
+      # Signed-Releases は .sigstore / .sigstore.json を署名として認識する。
       - name: Sign binaries with cosign
         run: |
           for f in artifacts/acac-*; do
             cosign sign-blob --yes \
-              --new-bundle-format=false \
-              --output-signature "$f.sig" \
-              --output-certificate "$f.pem" \
+              --bundle "$f.sigstore.json" \
               "$f"
           done
       # 全バイナリをまとめた SLSA provenance を生成し、Release アセット用に
