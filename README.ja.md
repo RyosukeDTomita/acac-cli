@@ -17,6 +17,18 @@ AC履歴の取得には [AtCoder Problems API](https://github.com/kenkoooo/AtCod
 
 ---
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=RyosukeDTomita%2Facac-cli&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=RyosukeDTomita/acac-cli&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=RyosukeDTomita/acac-cli&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=RyosukeDTomita/acac-cli&type=date&legend=top-left" />
+ </picture>
+</a>
+
+---
+
 ## HOW TO USE
 
 ```shell
