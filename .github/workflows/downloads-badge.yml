@@ -32,7 +32,8 @@ jobs:
           # パッケージを一括取得できないため、個別に取得して日別 DL 数を合計する。
           CURRENT=0
           for PKG in "${PKGS[@]}"; do
-            DOWNLOADS=$(curl -fsSL "https://api.npmjs.org/downloads/range/1000-01-01:3000-01-01/${PKG}"               | jq '[.downloads[]? | (.downloads // 0)] | add // 0')
+            DOWNLOADS=$(curl -fsSL "https://api.npmjs.org/downloads/range/1000-01-01:3000-01-01/${PKG}" \
+              | jq '[.downloads[]? | (.downloads // 0)] | add // 0')
             echo "${PKG} 18-month downloads: ${DOWNLOADS}"
             CURRENT=$((CURRENT + DOWNLOADS))
           done
@@ -52,14 +53,13 @@ jobs:
 
           # 生成物だけを置く orphan ブランチを毎回作り直して force-push する(履歴を溜めない)。
           mkdir badge && cd badge
-          printf '{"schemaVersion":1,"label":"npm downloads","message":"%s total","color":"blue"}
-'             "${MAX}" > downloads.json
-          printf '%s
-' "${MAX}" > downloads-max.txt
-          printf '%s
-' "${CURRENT}" > downloads-current-18m.txt
+          printf '{"schemaVersion":1,"label":"npm downloads","message":"%s total","color":"blue"}\n' "${MAX}" > downloads.json
+          printf '%s\n' "${MAX}" > downloads-max.txt
+          printf '%s\n' "${CURRENT}" > downloads-current-18m.txt
           git init -q
           git checkout -q -b badges
           git add downloads.json downloads-max.txt downloads-current-18m.txt
-          git -c user.name="github-actions[bot]"               -c user.email="41898282+github-actions[bot]@users.noreply.github.com"               commit -q -m "chore(badge): npm downloads ${MAX} total"
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "chore(badge): npm downloads ${MAX} total"
           git push -fq "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" badges
