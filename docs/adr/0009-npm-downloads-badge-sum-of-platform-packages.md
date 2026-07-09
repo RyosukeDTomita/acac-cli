@@ -1,8 +1,10 @@
 ---
 
-## status: accepted date: 2026-06-24 decision-makers: "@RyosukeDTomita"
+## status: superseded date: 2026-06-24 decision-makers: "@RyosukeDTomita"
 
 # ADR-0009: npm DL バッジはプラットフォーム別パッケージ5つの合計で出す
+
+Superseded by: [[ADR-0010]]
 
 ## Context and Problem Statement
 
