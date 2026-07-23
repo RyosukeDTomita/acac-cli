@@ -3,7 +3,7 @@
 
 module Main (main) where
 
-import Acac (ParsedArgs (..), Submission, aggregate, nextFromSecond, parseArgs, renderTable, splitIntoWeeks)
+import Acac (ParsedArgs (..), Submission, aggregate, nextFromSecond, noAcMessage, parseArgs, renderTable, splitIntoWeeks)
 import Control.Concurrent (threadDelay)
 import Data.Aeson (eitherDecode)
 import Data.Text (Text)
@@ -45,9 +45,12 @@ main = do
     Right (Run username) -> do
       now <- round <$> getPOSIXTime
       submissions <- fetchRecent username now
-      let weeks = splitIntoWeeks $ aggregate submissions
-      putStr creditBanner
-      putStrLn $ renderTable weeks
+      let acRecords = aggregate submissions
+      if null acRecords
+        then putStrLn $ noAcMessage username
+        else do
+          putStr creditBanner
+          putStrLn $ renderTable $ splitIntoWeeks acRecords
 
 -- | `--help` で表示する usage テキスト。
 usageText :: String

@@ -11,6 +11,7 @@ module Acac
     aggregate,
     splitIntoWeeks,
     renderTable,
+    noAcMessage,
   )
 where
 
@@ -192,3 +193,10 @@ formatProblemId contestId problemId = contestId <> T.toUpper suffix
 -- | 日付を曜日付きの文字列にする。例: showDayWithWeekday ... == "2026-06-20 (Sat)"
 showDayWithWeekday :: Day -> String
 showDayWithWeekday day = showGregorian day ++ " (" ++ take 3 (show $ dayOfWeek day) ++ ")"
+
+-- | AC が1件も見つからなかったときに表示するメッセージ。
+-- 存在しないユーザ名でも API は 200 + 空配列を返すため、
+-- 空テーブルではなくタイポに気づけるメッセージを出す。
+noAcMessage :: Text -> String
+noAcMessage username =
+  "No AC submissions found for user " ++ T.unpack username ++ " in the last 4 weeks (check the username?)"

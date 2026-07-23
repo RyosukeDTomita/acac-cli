@@ -81,6 +81,13 @@ npx acac-cli --help     # show usage (-h)
 npx acac-cli --version  # show version (-v)
 ```
 
+If no AC submissions are found in the last 4 weeks (e.g. a typo'd username), acac prints a message instead of an empty table:
+
+```shell
+npx acac-cli no-such-user
+No AC submissions found for user no-such-user in the last 4 weeks (check the username?)
+```
+
 ### supported
 
 The following binaries are built.

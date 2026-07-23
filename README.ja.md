@@ -79,6 +79,13 @@ npx acac-cli --help     # usage を表示する (-h)
 npx acac-cli --version  # バージョンを表示する (-v)
 ```
 
+直近4週間でACが1件も見つからない場合(ユーザ名のタイポなど)、空のテーブルの代わりにメッセージを表示する。
+
+```shell
+npx acac-cli no-such-user
+No AC submissions found for user no-such-user in the last 4 weeks (check the username?)
+```
+
 ### supported
 
 以下のバイナリを作成。

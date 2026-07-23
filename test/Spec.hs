@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wunused-imports -Werror=incomplete-patterns #-}
 
-import Acac (ParsedArgs (..), Submission (..), aggregate, nextFromSecond, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
+import Acac (ParsedArgs (..), Submission (..), aggregate, nextFromSecond, noAcMessage, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
 import Data.Aeson (eitherDecode)
 import Data.List (intercalate)
 import Data.Text (Text)
@@ -118,3 +118,8 @@ main = hspec $ do
             ]
     it "renders one table with a single header, per-week Total, and shared column widths" $
       renderTable weeks `shouldBe` expected
+
+  describe "noAcMessage" $ do
+    it "mentions the username and the lookback window" $
+      noAcMessage "HathawayNoa"
+        `shouldBe` "No AC submissions found for user HathawayNoa in the last 4 weeks (check the username?)"
