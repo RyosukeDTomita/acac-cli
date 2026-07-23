@@ -76,6 +76,11 @@ npx acac-cli <atcoder-username>
 
 It displays your recent AC history as a weekly table.
 
+```shell
+npx acac-cli --help     # show usage (-h)
+npx acac-cli --version  # show version (-v)
+```
+
 ### supported
 
 The following binaries are built.

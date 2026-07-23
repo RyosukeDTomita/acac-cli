@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wunused-imports #-}
+{-# OPTIONS_GHC -Wunused-imports -Werror=incomplete-patterns #-}
 
 module Acac
   ( Submission (..),
+    ParsedArgs (..),
     parseArgs,
     toJstDay,
     pageSize,
@@ -43,10 +44,20 @@ instance FromJSON Submission where
         <*> o .: "contest_id"
         <*> o .: "result"
 
--- | コマンドライン引数からユーザ名を取り出す。
--- 引数はユーザ名1個だけを受け付け、それ以外は usage エラーを返す。
-parseArgs :: [String] -> Either String Text
-parseArgs [username] = Right (T.pack username)
+-- | コマンドライン引数を解釈した結果。
+-- ShowHelp/ShowVersion は `--help`/`--version` フラグ、Run は通常のユーザ名指定。
+data ParsedArgs = ShowHelp | ShowVersion | Run Text
+  deriving (Show, Eq)
+
+-- | コマンドライン引数からユーザ名(または --help/-h・--version/-v フラグ)を取り出す。
+-- 引数はユーザ名1個、または help/version フラグのどちらか1個だけを受け付け、
+-- それ以外は usage エラーを返す。
+parseArgs :: [String] -> Either String ParsedArgs
+parseArgs ["--help"] = Right ShowHelp
+parseArgs ["-h"] = Right ShowHelp
+parseArgs ["--version"] = Right ShowVersion
+parseArgs ["-v"] = Right ShowVersion
+parseArgs [username] = Right (Run (T.pack username))
 parseArgs _args = Left "usage: acac <atcoder-username>"
 
 -- | APIが1リクエストで返す提出の最大件数(固定値)

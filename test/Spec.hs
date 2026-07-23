@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wunused-imports #-}
+{-# OPTIONS_GHC -Wunused-imports -Werror=incomplete-patterns #-}
 
-import Acac (Submission (..), aggregate, nextFromSecond, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
+import Acac (ParsedArgs (..), Submission (..), aggregate, nextFromSecond, pageSize, parseArgs, renderTable, splitIntoWeeks, toJstDay)
 import Data.Aeson (eitherDecode)
 import Data.List (intercalate)
 import Data.Text (Text)
@@ -34,7 +34,15 @@ main = hspec $ do
 
   describe "parseArgs" $ do
     it "returns the username for a single argument" $
-      parseArgs ["HathawayNoa"] `shouldBe` Right "HathawayNoa"
+      parseArgs ["HathawayNoa"] `shouldBe` Right (Run "HathawayNoa")
+    it "recognizes --help" $
+      parseArgs ["--help"] `shouldBe` Right ShowHelp
+    it "recognizes -h" $
+      parseArgs ["-h"] `shouldBe` Right ShowHelp
+    it "recognizes --version" $
+      parseArgs ["--version"] `shouldBe` Right ShowVersion
+    it "recognizes -v" $
+      parseArgs ["-v"] `shouldBe` Right ShowVersion
     it "fails with a usage message when no argument is given" $
       parseArgs [] `shouldBe` Left "usage: acac <atcoder-username>"
     it "fails with a usage message when too many arguments are given" $

@@ -24,6 +24,8 @@ executable acac
     import:           warnings
     main-is:          Main.hs
     hs-source-dirs:   app
+    other-modules:    Paths_acac
+    autogen-modules:  Paths_acac
     build-depends:    base
                     , acac
                     , aeson

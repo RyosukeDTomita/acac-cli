@@ -74,6 +74,11 @@ npx acac-cli <atcoder-username>
 
 直近の AC 履歴を週ごとのテーブルで表示する。
 
+```shell
+npx acac-cli --help     # usage を表示する (-h)
+npx acac-cli --version  # バージョンを表示する (-v)
+```
+
 ### supported
 
 以下のバイナリを作成。
