@@ -39,10 +39,6 @@ main = hspec $ do
       parseArgs ["--help"] `shouldBe` Right ShowHelp
     it "recognizes -h" $
       parseArgs ["-h"] `shouldBe` Right ShowHelp
-    it "recognizes --version" $
-      parseArgs ["--version"] `shouldBe` Right ShowVersion
-    it "recognizes -v" $
-      parseArgs ["-v"] `shouldBe` Right ShowVersion
     it "fails with a usage message when no argument is given" $
       parseArgs [] `shouldBe` Left "usage: acac <atcoder-username>"
     it "fails with a usage message when too many arguments are given" $

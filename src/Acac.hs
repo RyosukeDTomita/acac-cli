@@ -46,18 +46,15 @@ instance FromJSON Submission where
         <*> o .: "result"
 
 -- | コマンドライン引数を解釈した結果。
--- ShowHelp/ShowVersion は `--help`/`--version` フラグ、Run は通常のユーザ名指定。
-data ParsedArgs = ShowHelp | ShowVersion | Run Text
+-- ShowHelp は `--help`/`-h` フラグ、Run は通常のユーザ名指定。
+data ParsedArgs = ShowHelp | Run Text
   deriving (Show, Eq)
 
--- | コマンドライン引数からユーザ名(または --help/-h・--version/-v フラグ)を取り出す。
--- 引数はユーザ名1個、または help/version フラグのどちらか1個だけを受け付け、
--- それ以外は usage エラーを返す。
+-- | コマンドライン引数からユーザ名(または --help/-h フラグ)を取り出す。
+-- 引数はユーザ名1個、または help フラグ1個だけを受け付け、それ以外は usage エラーを返す。
 parseArgs :: [String] -> Either String ParsedArgs
 parseArgs ["--help"] = Right ShowHelp
 parseArgs ["-h"] = Right ShowHelp
-parseArgs ["--version"] = Right ShowVersion
-parseArgs ["-v"] = Right ShowVersion
 parseArgs [username] = Right (Run (T.pack username))
 parseArgs _args = Left "usage: acac <atcoder-username>"
 

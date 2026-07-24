@@ -9,7 +9,6 @@ import Data.Aeson (eitherDecode)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Time.Clock.POSIX (getPOSIXTime)
-import Data.Version (showVersion)
 import Network.HTTP.Simple
   ( getResponseBody,
     getResponseStatusCode,
@@ -17,7 +16,6 @@ import Network.HTTP.Simple
     parseRequest,
     setRequestHeader,
   )
-import Paths_acac (version)
 import System.Environment (getArgs)
 import System.Exit (die)
 
@@ -41,7 +39,6 @@ main = do
   case parseArgs args of
     Left err -> die err
     Right ShowHelp -> putStr usageText
-    Right ShowVersion -> putStrLn ("acac " ++ showVersion version)
     Right (Run username) -> do
       now <- round <$> getPOSIXTime
       submissions <- fetchRecent username now
@@ -61,8 +58,7 @@ usageText =
       "Show recent AtCoder AC history as a weekly table.",
       "",
       "options:",
-      "  --help, -h     show this help message and exit",
-      "  --version, -v  show version information and exit"
+      "  --help, -h  show this help message and exit"
     ]
 
 -- | 表の前に出力する、生成元を示すクレジット文字列(末尾の空行で表と区切る)。

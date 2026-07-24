@@ -75,8 +75,7 @@ npx acac-cli <atcoder-username>
 直近の AC 履歴を週ごとのテーブルで表示する。
 
 ```shell
-npx acac-cli --help     # usage を表示する (-h)
-npx acac-cli --version  # バージョンを表示する (-v)
+npx acac-cli --help  # usage を表示する (-h)
 ```
 
 直近4週間でACが1件も見つからない場合(ユーザ名のタイポなど)、空のテーブルの代わりにメッセージを表示する。
