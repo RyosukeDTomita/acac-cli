@@ -1,13 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wunused-imports #-}
+{-# OPTIONS_GHC -Wunused-imports -Werror=incomplete-patterns #-}
 
 module Main (main) where
 
-import Acac (Submission, aggregate, nextFromSecond, parseArgs, renderTable, splitIntoWeeks)
+import Acac (FetchWindow (..), ParsedArgs (..), Submission, aggregate, buildSubmissionsUrl, noAcMessage, parseArgs, renderTable, retryWindow, splitIntoWeeks, windowFromSecond)
 import Control.Concurrent (threadDelay)
 import Data.Aeson (eitherDecode)
 import Data.Text (Text)
-import Data.Text qualified as T
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Network.HTTP.Simple
   ( getResponseBody,
@@ -19,16 +18,6 @@ import Network.HTTP.Simple
 import System.Environment (getArgs)
 import System.Exit (die)
 
--- 取得期間。最低 1 週間、1 アクセスで取り切れるなら最大 4 週間まで表示する。
-minWindowDays :: Int
-minWindowDays = 7
-
-maxWindowDays :: Int
-maxWindowDays = 28
-
-oneDaySeconds :: Int
-oneDaySeconds = 86400
-
 -- リクエスト間の sleep。API への礼儀で 1 秒超にする。
 sleepBetweenRequests :: IO ()
 sleepBetweenRequests = threadDelay 1100000
@@ -38,12 +27,28 @@ main = do
   args <- getArgs
   case parseArgs args of
     Left err -> die err
-    Right username -> do
+    Right ShowHelp -> putStr usageText
+    Right (Run username) -> do
       now <- round <$> getPOSIXTime
       submissions <- fetchRecent username now
-      let weeks = splitIntoWeeks $ aggregate submissions
-      putStr creditBanner
-      putStrLn $ renderTable weeks
+      let acRecords = aggregate submissions
+      if null acRecords
+        then putStrLn $ noAcMessage username
+        else do
+          putStr creditBanner
+          putStrLn $ renderTable $ splitIntoWeeks acRecords
+
+-- | `--help` で表示する usage テキスト。
+usageText :: String
+usageText =
+  unlines
+    [ "usage: acac <atcoder-username>",
+      "",
+      "Show recent AtCoder AC history as a weekly table.",
+      "",
+      "options:",
+      "  --help, -h  show this help message and exit"
+    ]
 
 -- | 表の前に出力する、生成元を示すクレジット文字列(末尾の空行で表と区切る)。
 creditBanner :: String
@@ -59,23 +64,20 @@ creditBanner =
 -- 直近1週間に絞って取り直す(最低1週間は表示する)。
 fetchRecent :: Text -> Int -> IO [Submission]
 fetchRecent username now = do
-  batch <- fetchPage username (now - maxWindowDays * oneDaySeconds)
-  case nextFromSecond batch of
+  batch <- fetchPage username (windowFromSecond WideWindow now)
+  case retryWindow batch of
     Nothing -> pure batch
-    Just _ -> do
+    Just window -> do
       sleepBetweenRequests
-      fetchPage username (now - minWindowDays * oneDaySeconds)
+      fetchPage username (windowFromSecond window now)
 
 -- | 1 リクエストぶんの提出を取得する。
 -- Cloudflare 対策で Accept-Encoding: gzip を付ける(http-conduit が自動で解凍する)。
 fetchPage :: Text -> Int -> IO [Submission]
 fetchPage username fromSecond = do
-  let url =
-        "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user="
-          ++ T.unpack username
-          ++ "&from_second="
-          ++ show fromSecond
-  request <- setRequestHeader "Accept-Encoding" ["gzip"] <$> parseRequest url
+  request <-
+    setRequestHeader "Accept-Encoding" ["gzip"]
+      <$> parseRequest (buildSubmissionsUrl username fromSecond)
   response <- httpLBS request
   let status = getResponseStatusCode response
   if status /= 200

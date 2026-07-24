@@ -29,12 +29,16 @@ Chosen option: "1(`src/Acac.hs` と `app/Main.hs` に分離)"。
 
 `src/Acac.hs` には副作用のない純粋関数と型だけを置く
 (`parseArgs`,`formatProblemId`,`toJstDay`,`aggregate`,`renderTable`,
-`nextFromSecond`,`Submission` とその `FromJSON`)。`app/Main.hs` には `IO`
+`nextFromSecond`,`windowFromSecond`,`retryWindow`,`buildSubmissionsUrl`,
+`Submission` とその `FromJSON`)。`app/Main.hs` には `IO`
 (引数取得・HTTP 取得・sleep・標準出力)だけを置き、`Acac` の純粋関数を呼び出す
 薄い殻にする。テスト(`test/Spec.hs`)は `Acac` の純粋関数のみを対象にする。
 
 ページング判定 `nextFromSecond` のように、本来 I/O ループの中にある判断ロジックも、
-純粋関数として `Acac` 側へ切り出してテスト可能にする(\[[ADR-0002]\])。
+純粋関数として `Acac` 側へ切り出してテスト可能にする(\[[ADR-0002]\])。同様に、
+「次に何を取得すべきか」(`FetchWindow` / `windowFromSecond` / `retryWindow`)と
+リクエスト URL の組み立て(`buildSubmissionsUrl`)も `Acac` 側に置き、`Main` には
+HTTP を投げる処理だけを残す。
 
 ### Consequences
 

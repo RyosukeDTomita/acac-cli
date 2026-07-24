@@ -1,15 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -Wunused-imports #-}
+{-# OPTIONS_GHC -Wunused-imports -Werror=incomplete-patterns #-}
 
 module Acac
   ( Submission (..),
+    ParsedArgs (..),
     parseArgs,
     toJstDay,
     pageSize,
     nextFromSecond,
+    FetchWindow (..),
+    oneDaySeconds,
+    windowDays,
+    windowFromSecond,
+    retryWindow,
+    buildSubmissionsUrl,
     aggregate,
     splitIntoWeeks,
     renderTable,
+    noAcMessage,
   )
 where
 
@@ -43,10 +51,17 @@ instance FromJSON Submission where
         <*> o .: "contest_id"
         <*> o .: "result"
 
--- | コマンドライン引数からユーザ名を取り出す。
--- 引数はユーザ名1個だけを受け付け、それ以外は usage エラーを返す。
-parseArgs :: [String] -> Either String Text
-parseArgs [username] = Right (T.pack username)
+-- | コマンドライン引数を解釈した結果。
+-- ShowHelp は `--help`/`-h` フラグ、Run は通常のユーザ名指定。
+data ParsedArgs = ShowHelp | Run Text
+  deriving (Show, Eq)
+
+-- | コマンドライン引数からユーザ名(または --help/-h フラグ)を取り出す。
+-- 引数はユーザ名1個、または help フラグ1個だけを受け付け、それ以外は usage エラーを返す。
+parseArgs :: [String] -> Either String ParsedArgs
+parseArgs ["--help"] = Right ShowHelp
+parseArgs ["-h"] = Right ShowHelp
+parseArgs [username] = Right (Run (T.pack username))
 parseArgs _args = Left "usage: acac <atcoder-username>"
 
 -- | APIが1リクエストで返す提出の最大件数(固定値)
@@ -60,6 +75,43 @@ nextFromSecond :: [Submission] -> Maybe Int
 nextFromSecond batch
   | length batch < pageSize = Nothing
   | otherwise = Just $ maximum (map epochSecond batch) + 1
+
+-- | 提出を取りに行く窓(何日ぶんを取得するか)。
+-- Wide を1リクエストで試し、1アクセスに収まらなければ Narrow で取り直す(ADR-0004)。
+data FetchWindow = WideWindow | NarrowWindow
+  deriving (Show, Eq)
+
+-- | 1日の秒数。
+oneDaySeconds :: Int
+oneDaySeconds = 86400
+
+-- | 窓の日数。Narrow は最低保証の1週間、Wide は最大の4週間。
+windowDays :: FetchWindow -> Int
+windowDays NarrowWindow = 7
+windowDays WideWindow = 28
+
+-- | 現在時刻(epoch秒)と窓から、APIに渡す from_second を決める。
+-- ghci> windowFromSecond NarrowWindow 1000000
+-- 395200
+windowFromSecond :: FetchWindow -> Int -> Int
+windowFromSecond window now = now - windowDays window * oneDaySeconds
+
+-- | Wide で取得したバッチを見て、次に取り直すべき窓を決める。
+-- 満杯(=1アクセスに収まらない)なら Narrow で取り直し、収まっていれば Nothing(取得完了)。
+retryWindow :: [Submission] -> Maybe FetchWindow
+retryWindow batch = case nextFromSecond batch of
+  Nothing -> Nothing
+  Just _ -> Just NarrowWindow
+
+-- | AtCoder Problems の submissions API のURLを組み立てる。
+-- ghci> buildSubmissionsUrl "foo" 100
+-- "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=foo&from_second=100"
+buildSubmissionsUrl :: Text -> Int -> String
+buildSubmissionsUrl username fromSecond =
+  "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user="
+    ++ T.unpack username
+    ++ "&from_second="
+    ++ show fromSecond
 
 -- | 提出列をJSTの日ごとに集計する。
 -- AC(result == "AC")だけを対象に、同じ問題の重複を除いた問題ラベル一覧を作る。
@@ -181,3 +233,10 @@ formatProblemId contestId problemId = contestId <> T.toUpper suffix
 -- | 日付を曜日付きの文字列にする。例: showDayWithWeekday ... == "2026-06-20 (Sat)"
 showDayWithWeekday :: Day -> String
 showDayWithWeekday day = showGregorian day ++ " (" ++ take 3 (show $ dayOfWeek day) ++ ")"
+
+-- | AC が1件も見つからなかったときに表示するメッセージ。
+-- 存在しないユーザ名でも API は 200 + 空配列を返すため、
+-- 空テーブルではなくタイポに気づけるメッセージを出す。
+noAcMessage :: Text -> String
+noAcMessage username =
+  "No AC submissions found for user " ++ T.unpack username ++ " in the last 4 weeks (check the username?)"
