@@ -4,12 +4,12 @@
 
 # ADR-0009: npm DL バッジはプラットフォーム別パッケージ5つの合計で出す
 
-Superseded by: [[ADR-0010]]
+Superseded by: \[[ADR-0010]\]
 
 ## Context and Problem Statement
 
 README には npm の DL 数バッジを貼っている。当初は `img.shields.io/npm/dw/acac-cli`
-(本体 acac-cli の週間 DL)を使っていた。しかし配布構成([[ADR-0005]])上、本体 acac-cli は
+(本体 acac-cli の週間 DL)を使っていた。しかし配布構成(\[[ADR-0005]\])上、本体 acac-cli は
 薄い JS シム(`npm/bin/cli.js`)で、実体のバイナリはプラットフォーム別パッケージ
 (`acac-linux-x64` ほか)側にある。
 
@@ -29,7 +29,7 @@ README には npm の DL 数バッジを貼っている。当初は `img.shields
 
 - 実 install 数に近い、過小でも過大でもない1つの数を出したい
 - 既存ワークフロー規約(SHA ピン留め・最小 permissions・追加 secret を増やさない)に合わせたい
-- 配布構成([[ADR-0005]])を変えずにバッジだけで完結させたい
+- 配布構成(\[[ADR-0005]\])を変えずにバッジだけで完結させたい
 
 ## Considered Options
 
@@ -65,7 +65,7 @@ shields.io には複数パッケージを合計する標準バッジが無く、
 
 - Good: 本体単独より実 install 数に近い数が出る(過小を是正)
 - Good: 追加 secret 不要(`GITHUB_TOKEN` のみ)・第三者 action も増やさない
-- Good: 配布構成([[ADR-0005]])に手を入れずバッジだけで完結する
+- Good: 配布構成(\[[ADR-0005]\])に手を入れずバッジだけで完結する
 - Bad: バイナリ側は CI の再取得で上振れしうるため、合計も「やや上振れした install 数の
   近似」であり厳密値ではない
 - Bad: cron による更新のため、バッジは即時ではなく最大1日遅れる
@@ -96,7 +96,7 @@ README のバッジが合計値で表示されることで確認する。ロー�
 
 ## More Information
 
-- 配布構成: [[ADR-0005]](npm 配布は optionalDependencies 方式)
+- 配布構成: \[[ADR-0005]\](npm 配布は optionalDependencies 方式)
 - 関連実装: `.github/workflows/downloads-badge.yml`、`README.md` / `README.ja.md` のバッジ
 - npm download counts API: https://github.com/npm/registry/blob/main/docs/download-counts.md
 - shields.io endpoint badge: https://shields.io/badges/endpoint-badge

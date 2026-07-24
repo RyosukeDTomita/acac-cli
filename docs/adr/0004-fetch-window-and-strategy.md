@@ -39,7 +39,11 @@ Chosen option: "1(4週間を1回試し、満杯なら1週間で取り直す)"。
 直近1週間ぶんを表示する(最低1週間保証)。取り直しが発生する場合のみ、リクエスト間に
 1秒超(`threadDelay 1_100_000`)の sleep を入れる。
 
-満杯判定には既存の純粋関数 `nextFromSecond`(`Nothing` なら満杯でない)を再利用する。
+窓の表現と from_second の計算は純粋関数として `Acac` に置く(\[[ADR-0003]\])。
+`FetchWindow`(`WideWindow` = 28日 / `NarrowWindow` = 7日)を `windowDays` で日数にし、
+`windowFromSecond window now` が `now - 日数 * 86400` を返す。満杯判定は既存の純粋関数
+`nextFromSecond`(`Nothing` なら満杯でない)を再利用し、それを包んだ `retryWindow` が
+「取り直し不要なら `Nothing`、必要なら `Just NarrowWindow`」を返す。
 取得後は `aggregate` で日ごとに集計し、`splitIntoWeeks` で今日(JST)から遡る7日刻みの
 週に分け、`renderTable` で「ヘッダ1つ・週ごとに区切りと week total を持つ単一テーブル」
 として描画する。
@@ -57,9 +61,11 @@ Chosen option: "1(4週間を1回試し、満杯なら1週間で取り直す)"。
 
 ### Confirmation
 
-`app/Main.hs` の `fetchRecent` が、4週間リクエスト→`nextFromSecond` が `Nothing` なら
-そのまま、`Just _` なら sleep して1週間で取り直す、という分岐になっていることで確認する。
-実 API では、通常ユーザで1リクエストに収まり週ごとのテーブルが表示されることを確認する。
+`app/Main.hs` の `fetchRecent` が、`WideWindow` でリクエスト→`retryWindow` が `Nothing` なら
+そのまま、`Just window` なら sleep してその窓で取り直す、という分岐になっていることで確認する。
+窓の日数と from_second の計算は `test/Spec.hs` の `windowDays` / `windowFromSecond` /
+`retryWindow` のテストで確認する。実 API では、通常ユーザで1リクエストに収まり週ごとの
+テーブルが表示されることを確認する。
 
 ## Pros and Cons of the Options
 
@@ -85,4 +91,5 @@ Chosen option: "1(4週間を1回試し、満杯なら1週間で取り直す)"。
 - AtCoder Problems API ドキュメント: https://github.com/kenkoooo/AtCoderProblems/blob/main/doc/api.md
 - 置き換え元: \[[ADR-0002]\](submissions API のページング方式)
 - 関連実装: `app/Main.hs` の `fetchRecent` / `fetchPage`、`src/Acac.hs` の
-  `nextFromSecond` / `splitIntoWeeks` / `renderTable`
+  `FetchWindow` / `windowDays` / `windowFromSecond` / `retryWindow` /
+  `buildSubmissionsUrl` / `nextFromSecond` / `splitIntoWeeks` / `renderTable`

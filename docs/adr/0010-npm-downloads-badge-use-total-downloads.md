@@ -4,7 +4,7 @@
 
 # ADR-0010: npm DL バッジは18か月合計の過去最大で出す
 
-Supersedes: [[ADR-0009]]
+Supersedes: \[[ADR-0009]\]
 
 ## Context and Problem Statement
 
@@ -72,7 +72,7 @@ https://api.npmjs.org/downloads/range/1000-01-01:3000-01-01/<pkg>
 
 ## More Information
 
-- Superseded ADR: [[ADR-0009]]
+- Superseded ADR: \[[ADR-0009]\]
 - 関連実装: `.github/workflows/downloads-badge.yml`
 - npm download counts API: https://github.com/npm/registry/blob/main/docs/download-counts.md
 - shields.io npm downloads badge: `https://img.shields.io/npm/d18m/acac-cli.svg`

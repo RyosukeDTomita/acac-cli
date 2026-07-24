@@ -8,6 +8,12 @@ module Acac
     toJstDay,
     pageSize,
     nextFromSecond,
+    FetchWindow (..),
+    oneDaySeconds,
+    windowDays,
+    windowFromSecond,
+    retryWindow,
+    buildSubmissionsUrl,
     aggregate,
     splitIntoWeeks,
     renderTable,
@@ -69,6 +75,43 @@ nextFromSecond :: [Submission] -> Maybe Int
 nextFromSecond batch
   | length batch < pageSize = Nothing
   | otherwise = Just $ maximum (map epochSecond batch) + 1
+
+-- | 提出を取りに行く窓(何日ぶんを取得するか)。
+-- Wide を1リクエストで試し、1アクセスに収まらなければ Narrow で取り直す(ADR-0004)。
+data FetchWindow = WideWindow | NarrowWindow
+  deriving (Show, Eq)
+
+-- | 1日の秒数。
+oneDaySeconds :: Int
+oneDaySeconds = 86400
+
+-- | 窓の日数。Narrow は最低保証の1週間、Wide は最大の4週間。
+windowDays :: FetchWindow -> Int
+windowDays NarrowWindow = 7
+windowDays WideWindow = 28
+
+-- | 現在時刻(epoch秒)と窓から、APIに渡す from_second を決める。
+-- ghci> windowFromSecond NarrowWindow 1000000
+-- 395200
+windowFromSecond :: FetchWindow -> Int -> Int
+windowFromSecond window now = now - windowDays window * oneDaySeconds
+
+-- | Wide で取得したバッチを見て、次に取り直すべき窓を決める。
+-- 満杯(=1アクセスに収まらない)なら Narrow で取り直し、収まっていれば Nothing(取得完了)。
+retryWindow :: [Submission] -> Maybe FetchWindow
+retryWindow batch = case nextFromSecond batch of
+  Nothing -> Nothing
+  Just _ -> Just NarrowWindow
+
+-- | AtCoder Problems の submissions API のURLを組み立てる。
+-- ghci> buildSubmissionsUrl "foo" 100
+-- "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user=foo&from_second=100"
+buildSubmissionsUrl :: Text -> Int -> String
+buildSubmissionsUrl username fromSecond =
+  "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user="
+    ++ T.unpack username
+    ++ "&from_second="
+    ++ show fromSecond
 
 -- | 提出列をJSTの日ごとに集計する。
 -- AC(result == "AC")だけを対象に、同じ問題の重複を除いた問題ラベル一覧を作る。
