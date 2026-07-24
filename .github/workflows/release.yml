@@ -162,9 +162,11 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
-      # OIDC trusted publishing には npm >= 11.5.1 が必要(node20 同梱は npm10 のため更新する)。
+      # OIDC trusted publishing には npm >= 11.5.1 が必要なため npm を最新へ更新する。
+      # npm@latest 側にも engines 制約(npm12 は node ^22.22.2 || ^24.15.0 || >=26.0.0)が
+      # あるので、上の node-version は npm@latest が要求する node を満たすものにしておく。
       - name: Upgrade npm for OIDC trusted publishing
         run: npm install -g npm@latest
       - name: Download all binaries
