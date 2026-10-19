@@ -6,6 +6,10 @@ on:
     - cron: '0 2 * * 0'  # Weekly on Sundays
   push:
     branches: ["main"]
+  # Run on PRs that touch this workflow to verify changes before merge (experimental trigger).
+  pull_request:
+    paths:
+      - ".github/workflows/scorecard.yml"
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -45,7 +49,8 @@ jobs:
           # For private repositories:
           #   - `publish_results` will always be set to `false`, regardless
           #     of the value entered here.
-          publish_results: true
+          # Publishing is only supported from the default branch, so skip it on PRs.
+          publish_results: ${{ github.event_name != 'pull_request' }}
 
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
